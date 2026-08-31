@@ -28,8 +28,27 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
     options.body = JSON.stringify(body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
-  const data = await response.json();
+  let response;
+  try {
+    response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+  } catch (error) {
+    const message = error?.message || 'Network request failed';
+    if (message.includes('CLEARTEXT') || message.includes('cleartext')) {
+      throw new Error(
+        'HTTP blocked on this device. Install the latest app build, or use Expo Go for testing.'
+      );
+    }
+    throw new Error(
+      `Cannot reach server at ${API_BASE_URL}. Check Wi-Fi and that backend is running. (${message})`
+    );
+  }
+
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(`Server returned invalid response (${response.status})`);
+  }
 
   if (!response.ok) {
     const message = data.message || data.errors || 'Something went wrong';

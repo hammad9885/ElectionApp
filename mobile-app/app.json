@@ -11,7 +11,7 @@
     },
     "android": {
       "package": "com.govtapp.election",
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -20,6 +20,7 @@
       }
     },
     "plugins": [
+      "./plugins/withAndroidCleartext.js",
       [
         "expo-build-properties",
         {
