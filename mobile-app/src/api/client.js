@@ -1,13 +1,9 @@
-// Backend API base URL
-// Android emulator: http://10.0.2.2:8000
-// iOS simulator:   http://localhost:8000
-// Real device:     http://<YOUR-COMPUTER-LAN-IP>:8000
-//
-// IMPORTANT: For testing on a real phone (Expo Go), the backend must be
-// reachable from the phone over your Wi-Fi. Set this to your PC's LAN IP.
-// Example: 'http://192.168.100.5:8000/api/v1'
+import Constants from 'expo-constants';
 
-export const API_BASE_URL = 'http://192.168.110.10:8000/api/v1';
+const localApiUrl = 'http://192.168.110.10:8000/api/v1';
+
+export const API_BASE_URL =
+  Constants.expoConfig?.extra?.apiBaseUrl || localApiUrl;
 
 export async function apiRequest(endpoint, method = 'GET', body = null, token = null) {
   const headers = {

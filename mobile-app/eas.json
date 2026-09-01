@@ -1,22 +1,32 @@
 {
   "cli": {
-    "version": ">= 12.0.0"
+    "version": ">= 12.0.0",
+    "appVersionSource": "local"
   },
   "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.110.10:8000/api/v1"
+      }
+    },
     "preview": {
       "android": {
         "buildType": "apk"
       },
-      "distribution": "internal"
-    },
-    "preview2": {
-      "android": {
-        "gradleCommand": ":app:assembleRelease"
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://192.168.110.10:8000/api/v1"
       }
     },
     "production": {
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "apk"
+      },
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://govt-app-backend-production.up.railway.app/api/v1"
       }
     }
   },
