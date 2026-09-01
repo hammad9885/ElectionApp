@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { authAPI } from '../api/auth';
+import PasswordInput, { PLACEHOLDER_COLOR } from '../components/PasswordInput';
 
 const GOVT_GREEN = '#006233';
 
@@ -71,6 +72,7 @@ export default function SignupScreen({ navigation }) {
           value={name}
           onChangeText={setName}
           placeholder="Enter your full name"
+          placeholderTextColor={PLACEHOLDER_COLOR}
         />
 
         <Text style={styles.label}>Email</Text>
@@ -78,7 +80,8 @@ export default function SignupScreen({ navigation }) {
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="Enter your email"
+          placeholder="example@email.com"
+          placeholderTextColor={PLACEHOLDER_COLOR}
           keyboardType="email-address"
           autoCapitalize="none"
         />
@@ -88,27 +91,24 @@ export default function SignupScreen({ navigation }) {
           style={styles.input}
           value={phone}
           onChangeText={setPhone}
-          placeholder="e.g. 03XXXXXXXXX"
+          placeholder="03XX XXXXXXX"
+          placeholderTextColor={PLACEHOLDER_COLOR}
           keyboardType="phone-pad"
           maxLength={11}
         />
 
         <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
+        <PasswordInput
           value={password}
           onChangeText={setPassword}
           placeholder="Minimum 8 characters"
-          secureTextEntry
         />
 
         <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          style={styles.input}
+        <PasswordInput
           value={passwordConfirmation}
           onChangeText={setPasswordConfirmation}
-          placeholder="Re-enter password"
-          secureTextEntry
+          placeholder="Re-enter your password"
         />
 
         <TouchableOpacity
