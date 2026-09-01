@@ -9,10 +9,11 @@ import {
 } from 'react-native';
 
 const GOVT_GREEN = '#006233';
+const ecpLogo = require('../assets/ecp-logo.png');
 
 export default function SplashScreen({ navigation }) {
   const opacity = useRef(new Animated.Value(0)).current;
-  const scale = useRef(new Animated.Value(0.8)).current;
+  const scale = useRef(new Animated.Value(0.85)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -23,12 +24,11 @@ export default function SplashScreen({ navigation }) {
       }),
       Animated.spring(scale, {
         toValue: 1,
-        friction: 4,
+        friction: 5,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Show logo for 3-4 seconds then go to auth
     const timer = setTimeout(() => {
       navigation.replace('Auth');
     }, 3500);
@@ -39,12 +39,11 @@ export default function SplashScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={GOVT_GREEN} />
-      <Animated.View style={[styles.logoContainer, { opacity, transform: [{ scale }] }]}>
-        {/* Placeholder govt logo - replace with your actual logo image */}
-        <View style={styles.logoCircle}>
-          <Text style={styles.logoEmblem}>🛡️</Text>
+      <Animated.View style={[styles.content, { opacity, transform: [{ scale }] }]}>
+        <View style={styles.logoCard}>
+          <Image source={ecpLogo} style={styles.logo} resizeMode="contain" />
         </View>
-        <Text style={styles.title}>Government of Pakistan</Text>
+        <Text style={styles.title}>Election Commission{'\n'}of Pakistan</Text>
         <Text style={styles.subtitle}>Official Mobile Application</Text>
       </Animated.View>
     </View>
@@ -57,36 +56,36 @@ const styles = StyleSheet.create({
     backgroundColor: GOVT_GREEN,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
   },
-  logoContainer: {
+  content: {
     alignItems: 'center',
   },
-  logoCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
+  logoCard: {
+    width: 220,
+    height: 260,
     backgroundColor: '#fff',
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 20,
-    borderWidth: 4,
-    borderColor: '#ffffff',
+    padding: 16,
+    marginBottom: 24,
   },
-  logoEmblem: {
-    fontSize: 60,
-    color: GOVT_GREEN,
-    fontWeight: 'bold',
+  logo: {
+    width: 180,
+    height: 220,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
     textAlign: 'center',
+    lineHeight: 32,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#d4e6d4',
-    marginTop: 8,
+    marginTop: 10,
     textAlign: 'center',
   },
 });

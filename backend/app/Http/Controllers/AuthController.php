@@ -2,78 +2,97 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OtpMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    /**
-     * Register a new user (email + password).
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
+
+        $otp = $this->generateOtp();
 
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
             'password' => $validated['password'],
+            'otp' => $otp,
+            'otp_expires_at' => now()->addMinutes(10),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $this->sendOtpEmail($user, $otp);
 
-        return response()->json([
-            'message' => 'Account created successfully.',
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+        $response = [
+            'message' => 'Account created. OTP sent to your email.',
+            'email' => $user->email,
+        ];
+
+        if (config('app.debug')) {
+            $response['otp'] = $otp;
+        }
+
+        return response()->json($response, 201);
     }
 
-    /**
-     * Login via email + password OR phone + OTP.
-     */
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => ['required_without:phone', 'string', 'email'],
-            'password' => ['required_without:otp', 'string'],
-            'phone' => ['required_without:email', 'string'],
-            'otp' => ['required_without:password', 'string', 'size:6'],
-        ]);
+        if ($request->filled('otp')) {
+            $request->validate([
+                'otp' => ['required', 'string', 'size:6'],
+                'email' => ['required_without:phone', 'nullable', 'email'],
+                'phone' => ['required_without:email', 'nullable', 'string'],
+            ]);
 
-        // Login by email + password
-        if ($request->has('email') && !$request->has('otp')) {
-            $user = User::where('email', $request->email)->first();
+            $query = User::query()->where('otp', $request->otp)
+                ->where('otp_expires_at', '>', now());
 
-            if (!$user || !Hash::check($request->password, $user->password)) {
-                throw ValidationException::withMessages([
-                    'email' => ['The provided credentials are incorrect.'],
-                ]);
+            if ($request->filled('email')) {
+                $query->where('email', $request->email);
+            } else {
+                $query->where('phone', $request->phone);
             }
-        }
-        // Login by phone + OTP
-        else {
-            $user = User::where('phone', $request->phone)
-                ->where('otp', $request->otp)
-                ->where('otp_expires_at', '>', now())
-                ->first();
 
-            if (!$user) {
+            $user = $query->first();
+
+            if (! $user) {
                 throw ValidationException::withMessages([
                     'otp' => ['The OTP is invalid or has expired.'],
                 ]);
             }
 
-            // Clear OTP after successful login
-            $user->forceFill(['otp' => null, 'otp_expires_at' => null])->save();
+            $user->forceFill([
+                'otp' => null,
+                'otp_expires_at' => null,
+                'email_verified_at' => $user->email_verified_at ?? now(),
+            ])->save();
+        } elseif ($request->filled('email')) {
+            $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required', 'string'],
+            ]);
+
+            $user = User::where('email', $request->email)->first();
+
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                throw ValidationException::withMessages([
+                    'email' => ['The provided credentials are incorrect.'],
+                ]);
+            }
+        } else {
+            throw ValidationException::withMessages([
+                'email' => ['Email or phone with OTP is required.'],
+            ]);
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;
@@ -85,53 +104,76 @@ class AuthController extends Controller
         ]);
     }
 
-    /**
-     * Send OTP to the given phone number.
-     * In production, send via SMS. Stored on record for testing.
-     */
     public function sendOtp(Request $request)
     {
         $request->validate([
-            'phone' => ['required', 'string', 'max:20'],
+            'email' => ['required_without:phone', 'nullable', 'email'],
+            'phone' => ['required_without:email', 'nullable', 'string', 'max:20'],
         ]);
 
-        $user = User::where('phone', $request->phone)->first();
+        $user = $request->filled('email')
+            ? User::where('email', $request->email)->first()
+            : User::where('phone', $request->phone)->first();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'message' => 'No account found with this phone number.',
+                'message' => 'No account found with this email or phone number.',
             ], 404);
         }
 
-        $otp = str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $otp = $this->generateOtp();
 
         $user->forceFill([
             'otp' => $otp,
             'otp_expires_at' => now()->addMinutes(10),
         ])->save();
 
-        // In production send via SMS gateway. For demo, return OTP in response.
-        return response()->json([
-            'message' => 'OTP sent successfully.',
-            'otp' => $otp, // Remove this in production!
-        ]);
+        if ($request->filled('email')) {
+            $this->sendOtpEmail($user, $otp);
+        }
+
+        $response = [
+            'message' => $request->filled('email')
+                ? 'OTP sent to your email.'
+                : 'OTP sent successfully.',
+        ];
+
+        if (config('app.debug')) {
+            $response['otp'] = $otp;
+        }
+
+        return response()->json($response);
     }
 
-    /**
-     * Get the authenticated user.
-     */
     public function user(Request $request)
     {
         return response()->json($request->user());
     }
 
-    /**
-     * Logout (revoke token).
-     */
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logged out successfully.']);
+    }
+
+    private function generateOtp(): string
+    {
+        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    private function sendOtpEmail(User $user, string $otp): void
+    {
+        try {
+            Mail::to($user->email)->send(new OtpMail($user->name, $otp));
+        } catch (\Throwable $e) {
+            report($e);
+
+            if (! config('app.debug')) {
+                throw ValidationException::withMessages([
+                    'email' => ['Could not send OTP email. Please try again later.'],
+                ]);
+            }
+        }
     }
 }

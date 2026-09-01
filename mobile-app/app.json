@@ -1,22 +1,25 @@
 {
   "expo": {
-    "name": "Govt App",
+    "name": "ECP Pakistan",
     "slug": "govt-app",
-      "version": "1.1.0",
+    "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/ecp-logo.png",
     "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/ecp-logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#006233"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "package": "com.govtapp.election",
-      "versionCode": 4,
+      "versionCode": 8,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "backgroundColor": "#006233",
+        "foregroundImage": "./assets/ecp-logo.png"
       }
     },
     "plugins": [
@@ -31,7 +34,7 @@
       ]
     ],
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/ecp-logo.png"
     },
     "extra": {
       "eas": {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -14,23 +14,27 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../api/auth';
 import PasswordInput, { PLACEHOLDER_COLOR } from '../components/PasswordInput';
+import AppLogo from '../components/AppLogo';
 
 const GOVT_GREEN = '#006233';
-const LIGHT_GREEN = '#e8f5e9';
 
-export default function LoginScreen({ navigation }) {
-  const [activeTab, setActiveTab] = useState('email'); // 'email' or 'phone'
+export default function LoginScreen({ navigation, route }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [phone, setPhone] = useState('');
-  const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (route.params?.email) {
+      setEmail(route.params.email);
+    }
+  }, [route.params?.email]);
 
   const handleEmailLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please enter email and password');
       return;
     }
+
     setLoading(true);
     try {
       const res = await authAPI.login({ email, password });
@@ -44,140 +48,53 @@ export default function LoginScreen({ navigation }) {
     }
   };
 
-  const handlePhoneLogin = async () => {
-    if (!phone || !otp) {
-      Alert.alert('Error', 'Please enter phone and OTP');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await authAPI.login({ phone, otp });
-      await AsyncStorage.setItem('token', res.token);
-      await AsyncStorage.setItem('user', JSON.stringify(res.user));
-      navigation.replace('Home');
-    } catch (e) {
-      Alert.alert('Login Failed', e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSendOtp = async () => {
-    if (!phone) {
-      Alert.alert('Error', 'Please enter phone number');
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await authAPI.sendOtp(phone);
-      Alert.alert('OTP Sent', `Your OTP is: ${res.otp}\n(For demo only - send via SMS in production)`);
-    } catch (e) {
-      Alert.alert('Error', e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.flex}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.logo}>🛡️</Text>
+        <AppLogo size={90} style={styles.logo} />
+        <Text style={styles.orgName}>Election Commission of Pakistan</Text>
         <Text style={styles.heading}>Welcome Back</Text>
-        <Text style={styles.subHeading}>Login to continue</Text>
+        <Text style={styles.subHeading}>Login to your account</Text>
 
-        {/* Tabs */}
-        <View style={styles.tabContainer}>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'email' && styles.activeTab]}
-            onPress={() => setActiveTab('email')}
-          >
-            <Text style={[styles.tabText, activeTab === 'email' && styles.activeTabText]}>
-              Email
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.tab, activeTab === 'phone' && styles.activeTab]}
-            onPress={() => setActiveTab('phone')}
-          >
-            <Text style={[styles.tabText, activeTab === 'phone' && styles.activeTabText]}>
-              Phone + OTP
-            </Text>
-          </TouchableOpacity>
-        </View>
+        <Text style={styles.label}>Email</Text>
+        <TextInput
+          style={styles.input}
+          value={email}
+          onChangeText={setEmail}
+          placeholder="example@email.com"
+          placeholderTextColor={PLACEHOLDER_COLOR}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          editable={!loading}
+        />
 
-        {/* Form */}
-        {activeTab === 'email' ? (
-          <View>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              placeholder="example@email.com"
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
-            <Text style={styles.label}>Password</Text>
-            <PasswordInput
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-            />
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleEmailLogin}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <View>
-            <Text style={styles.label}>Phone Number</Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="03XX XXXXXXX"
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              keyboardType="phone-pad"
-              maxLength={11}
-            />
-            <Text style={styles.label}>OTP</Text>
-            <TextInput
-              style={styles.input}
-              value={otp}
-              onChangeText={setOtp}
-              placeholder="Enter 6-digit OTP"
-              placeholderTextColor={PLACEHOLDER_COLOR}
-              keyboardType="number-pad"
-              maxLength={6}
-            />
-            <TouchableOpacity style={styles.otpButton} onPress={handleSendOtp} disabled={loading}>
-              <Text style={styles.otpButtonText}>Send OTP</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.button} disabled={loading} onPress={handlePhoneLogin}>
-              {loading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.buttonText}>Login</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        )}
+        <Text style={styles.label}>Password</Text>
+        <PasswordInput
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Enter your password"
+          editable={!loading}
+        />
 
-        {/* Create account link */}
+        <TouchableOpacity
+          style={[styles.button, loading && styles.buttonDisabled]}
+          onPress={handleEmailLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
+        </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.createAccount}
           onPress={() => navigation.navigate('Signup')}
+          disabled={loading}
         >
           <Text style={styles.createAccountText}>
             Don't have an account? <Text style={styles.link}>Create Account</Text>
@@ -196,44 +113,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    fontSize: 50,
+    marginBottom: 12,
+  },
+  orgName: {
+    fontSize: 15,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 10,
+    color: GOVT_GREEN,
+    marginBottom: 8,
   },
   heading: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     textAlign: 'center',
     color: GOVT_GREEN,
   },
   subHeading: {
-    fontSize: 16,
+    fontSize: 15,
     textAlign: 'center',
     color: '#666',
-    marginBottom: 20,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    backgroundColor: LIGHT_GREEN,
-    borderRadius: 10,
-    padding: 4,
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  activeTab: {
-    backgroundColor: GOVT_GREEN,
-  },
-  tabText: {
-    color: GOVT_GREEN,
-    fontWeight: '600',
-  },
-  activeTabText: {
-    color: '#fff',
+    marginBottom: 24,
   },
   label: {
     fontSize: 14,
@@ -257,23 +156,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 24,
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
   buttonText: {
     color: '#fff',
     fontSize: 17,
     fontWeight: 'bold',
-  },
-  otpButton: {
-    marginTop: 12,
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: GOVT_GREEN,
-  },
-  otpButtonText: {
-    color: GOVT_GREEN,
-    fontSize: 15,
-    fontWeight: '600',
   },
   createAccount: {
     marginTop: 20,

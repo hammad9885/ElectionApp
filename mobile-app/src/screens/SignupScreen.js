@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { authAPI } from '../api/auth';
 import PasswordInput, { PLACEHOLDER_COLOR } from '../components/PasswordInput';
+import AppLogo from '../components/AppLogo';
 
 const GOVT_GREEN = '#006233';
 
@@ -37,18 +38,32 @@ export default function SignupScreen({ navigation }) {
       Alert.alert('Error', 'Password must be at least 8 characters');
       return;
     }
+
     setLoading(true);
     try {
-      await authAPI.register({
+      const res = await authAPI.register({
         name,
         email,
         password,
         password_confirmation: passwordConfirmation,
         phone,
       });
-      Alert.alert('Success', 'Account created! Please login.', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+
+      Alert.alert(
+        'Account Created',
+        res.otp
+          ? `Your account is ready. OTP (dev): ${res.otp}\n\nPlease login with your email and password.`
+          : 'Your account is ready. Please login with your email and password.',
+        [
+          {
+            text: 'Go to Login',
+            onPress: () =>
+              navigation.navigate('Auth', {
+                email: res.email,
+              }),
+          },
+        ]
+      );
     } catch (e) {
       Alert.alert('Registration Failed', e.message);
     } finally {
@@ -62,9 +77,10 @@ export default function SignupScreen({ navigation }) {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.logo}>🛡️</Text>
+        <AppLogo size={90} style={styles.logo} />
+        <Text style={styles.orgName}>Election Commission of Pakistan</Text>
         <Text style={styles.heading}>Create Account</Text>
-        <Text style={styles.subHeading}>Join Government Services</Text>
+        <Text style={styles.subHeading}>Register for ECP services</Text>
 
         <Text style={styles.label}>Full Name</Text>
         <TextInput
@@ -73,6 +89,7 @@ export default function SignupScreen({ navigation }) {
           onChangeText={setName}
           placeholder="Enter your full name"
           placeholderTextColor={PLACEHOLDER_COLOR}
+          editable={!loading}
         />
 
         <Text style={styles.label}>Email</Text>
@@ -84,6 +101,7 @@ export default function SignupScreen({ navigation }) {
           placeholderTextColor={PLACEHOLDER_COLOR}
           keyboardType="email-address"
           autoCapitalize="none"
+          editable={!loading}
         />
 
         <Text style={styles.label}>Phone Number</Text>
@@ -95,6 +113,7 @@ export default function SignupScreen({ navigation }) {
           placeholderTextColor={PLACEHOLDER_COLOR}
           keyboardType="phone-pad"
           maxLength={11}
+          editable={!loading}
         />
 
         <Text style={styles.label}>Password</Text>
@@ -102,6 +121,7 @@ export default function SignupScreen({ navigation }) {
           value={password}
           onChangeText={setPassword}
           placeholder="Minimum 8 characters"
+          editable={!loading}
         />
 
         <Text style={styles.label}>Confirm Password</Text>
@@ -109,10 +129,11 @@ export default function SignupScreen({ navigation }) {
           value={passwordConfirmation}
           onChangeText={setPasswordConfirmation}
           placeholder="Re-enter your password"
+          editable={!loading}
         />
 
         <TouchableOpacity
-          style={styles.button}
+          style={[styles.button, loading && styles.buttonDisabled]}
           onPress={handleRegister}
           disabled={loading}
         >
@@ -126,6 +147,7 @@ export default function SignupScreen({ navigation }) {
         <TouchableOpacity
           style={styles.login}
           onPress={() => navigation.goBack()}
+          disabled={loading}
         >
           <Text style={styles.loginText}>
             Already have an account? <Text style={styles.link}>Login</Text>
@@ -144,9 +166,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logo: {
-    fontSize: 50,
+    marginBottom: 12,
+  },
+  orgName: {
+    fontSize: 15,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 10,
+    color: GOVT_GREEN,
+    marginBottom: 8,
   },
   heading: {
     fontSize: 28,
@@ -181,6 +208,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 24,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: '#fff',

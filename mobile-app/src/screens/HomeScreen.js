@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../api/auth';
+import AppLogo from '../components/AppLogo';
 
 const GOVT_GREEN = '#006233';
 
@@ -63,8 +64,8 @@ export default function HomeScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerIcon}>🛡️</Text>
-        <Text style={styles.headerTitle}>Government Portal</Text>
+        <AppLogo size={70} style={styles.headerLogo} />
+        <Text style={styles.headerTitle}>Election Commission of Pakistan</Text>
         <Text style={styles.headerSubtitle}>
           Welcome to Official Services
         </Text>
@@ -127,8 +128,8 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
     alignItems: 'center',
   },
-  headerIcon: {
-    fontSize: 40,
+  headerLogo: {
+    marginBottom: 4,
   },
   headerTitle: {
     color: '#fff',
