@@ -12,4 +12,5 @@ fi
 php artisan config:clear --no-ansi
 php artisan migrate --force --no-ansi || true
 
-exec php artisan serve --host=0.0.0.0 --port="${PORT:-8080}" --no-reload
+PORT="${PORT:-8080}"
+exec php -S "0.0.0.0:${PORT}" -t public public/index.php
