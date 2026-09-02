@@ -5,6 +5,7 @@ services:
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
     healthCheckPath: /up
+    maxShutdownDelaySeconds: 60
     plan: free
     envVars:
       - key: APP_KEY
