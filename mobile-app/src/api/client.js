@@ -1,10 +1,12 @@
 import Constants from 'expo-constants';
 
+// Public API URL - works on any network when start-public.bat is running
+const cloudApiUrl = 'https://big-rivers-tell.loca.lt/api/v1';
 const localApiUrl = 'http://192.168.110.10:8000/api/v1';
-const REQUEST_TIMEOUT_MS = 15000;
+const REQUEST_TIMEOUT_MS = 30000;
 
 export const API_BASE_URL =
-  Constants.expoConfig?.extra?.apiBaseUrl || localApiUrl;
+  Constants.expoConfig?.extra?.apiBaseUrl || cloudApiUrl;
 
 function formatApiError(data, fallback = 'Something went wrong') {
   if (data?.errors && typeof data.errors === 'object') {
@@ -25,6 +27,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    'Bypass-Tunnel-Reminder': 'true',
   };
 
   if (token) {
@@ -50,7 +53,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
   } catch (error) {
     if (error.name === 'AbortError') {
       throw new Error(
-        'Server is not responding. Start backend and check Wi-Fi connection.'
+        'Server is not responding. Check your internet connection and try again.'
       );
     }
 
@@ -61,7 +64,7 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
       );
     }
     throw new Error(
-      `Cannot reach server. Check Wi-Fi and backend. (${message})`
+      `Cannot reach server. Check your internet connection. (${message})`
     );
   } finally {
     clearTimeout(timeoutId);

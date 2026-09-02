@@ -16,7 +16,7 @@
     },
     "android": {
       "package": "com.govtapp.election",
-      "versionCode": 8,
+      "versionCode": 10,
       "adaptiveIcon": {
         "backgroundColor": "#006233",
         "foregroundImage": "./assets/ecp-logo.png"

@@ -6,3 +6,10 @@ dockerfilePath = "Dockerfile"
 healthcheckPath = "/up"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
+
+[variables]
+APP_ENV = "production"
+APP_DEBUG = "false"
+LOG_CHANNEL = "stderr"
+DB_CONNECTION = "sqlite"
+DB_DATABASE = "/app/database/database.sqlite"
