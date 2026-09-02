@@ -1,0 +1,10 @@
+export const GOVT_GREEN = '#006233';
+export const GOVT_GREEN_LIGHT = '#d4e6d4';
+export const GOVT_GOLD = '#C4A035';
+export const PAGE_BG = '#f0f4f0';
+export const CARD_BG = '#ffffff';
+export const TEXT_PRIMARY = '#1a1a1a';
+export const TEXT_SECONDARY = '#666666';
+export const TEXT_MUTED = '#888888';
+export const BORDER = '#e0e0e0';
+export const ERROR = '#d32f2f';

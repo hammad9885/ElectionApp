@@ -5,6 +5,9 @@ import SplashScreen from '../screens/SplashScreen';
 import LoginScreen from '../screens/LoginScreen';
 import SignupScreen from '../screens/SignupScreen';
 import HomeScreen from '../screens/HomeScreen';
+import FormsListScreen from '../screens/FormsListScreen';
+import FormDetailScreen from '../screens/FormDetailScreen';
+import OnlineFormScreen from '../screens/OnlineFormScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +23,9 @@ export default function AppNavigator() {
           options={{ headerShown: true, title: 'Create Account' }}
         />
         <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="FormsList" component={FormsListScreen} />
+        <Stack.Screen name="FormDetail" component={FormDetailScreen} />
+        <Stack.Screen name="OnlineForm" component={OnlineFormScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

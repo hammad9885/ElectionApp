@@ -1,9 +1,12 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\FormController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
+    Route::post('/forms/submit', [FormController::class, 'submit']);
+
     // Public routes
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register']);

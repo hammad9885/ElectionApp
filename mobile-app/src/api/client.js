@@ -1,7 +1,7 @@
 import Constants from 'expo-constants';
 
-// Public API URL - works on any network when start-public.bat is running
-const cloudApiUrl = 'https://big-rivers-tell.loca.lt/api/v1';
+// Public cloud API - works on any network (Render.com)
+const cloudApiUrl = 'https://govt-app-api.onrender.com/api/v1';
 const localApiUrl = 'http://192.168.110.10:8000/api/v1';
 const REQUEST_TIMEOUT_MS = 30000;
 
@@ -27,7 +27,6 @@ export async function apiRequest(endpoint, method = 'GET', body = null, token = 
   const headers = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'Bypass-Tunnel-Reminder': 'true',
   };
 
   if (token) {
