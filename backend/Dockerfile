@@ -1,17 +1,11 @@
 FROM php:8.5-cli-alpine
 
 RUN apk add --no-cache \
-    sqlite-dev \
     libzip-dev \
     icu-dev \
-    oniguruma-dev \
-    openssl \
     && docker-php-ext-install \
-    pdo \
-    pdo_sqlite \
     zip \
     intl \
-    mbstring \
     bcmath \
     opcache
 
