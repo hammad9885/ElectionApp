@@ -1,13 +1,6 @@
 FROM php:8.5-cli-alpine
 
-RUN apk add --no-cache \
-    libzip-dev \
-    icu-dev \
-    && docker-php-ext-install \
-    zip \
-    intl \
-    bcmath \
-    opcache
+RUN php -r "foreach (['ctype','dom','fileinfo','filter','hash','iconv','json','libxml','mbstring','openssl','pcre','session','tokenizer','pdo_sqlite'] as \$e) { if (!extension_loaded(\$e)) { fwrite(STDERR, \"missing ext: \$e\n\"); exit(1); } }"
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
